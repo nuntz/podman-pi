@@ -1,0 +1,21 @@
+FROM node:20-slim
+
+# (Optional but common) Useful tooling some agents expect
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends bash git openssh-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Precreate config and session dirs so the agent can write inside the container
+RUN mkdir -p /root/.pi/agent/sessions
+
+# Your repo will be mounted here at runtime
+WORKDIR /workspace
+
+# Keep npm quieter and avoid polluting the mounted repo with caches
+ENV npm_config_update_notifier=false \
+    npm_config_fund=false \
+    npm_config_audit=false \
+    npm_config_cache=/tmp/.npm
+
+# Always run the agent
+ENTRYPOINT ["npx","-y","-p","@mariozechner/pi-coding-agent","pi"]
